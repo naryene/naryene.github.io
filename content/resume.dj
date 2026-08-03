@@ -1,19 +1,18 @@
 # Resume
 
-[resume.html]: https://nobertos.github.io/resume.html
-[resume.pdf]: https://nobertos.github.io/resume.pdf
-[Generate All the Things]: https://nobertos.github.io/2021/11/07/generate-all-the-things.html
-[Notes on Paxos]: https://nobertos.github.io/2020/11/01/notes-on-paxos.html
+[resume.html]: https://naryene.github.io/resume.html
+[resume.pdf]: https://naryene.github.io/resume.pdf
+[Generate All the Things]: https://naryene.github.io/2021/11/07/generate-all-the-things.html
+[Notes on Paxos]: https://naryene.github.io/2020/11/01/notes-on-paxos.html
 [ungrammar]: https://github.com/rust-analyzer/ungrammar/tree/42810d770e4cddec2a5fff658489fa72f3b28a7c
 [scale]: https://github.com/rust-analyzer/rust-analyzer/blob/d9b2291f546abc77d24499339a72a89127464b95/docs/dev/style.md#scale-of-changes
-[cargo xtask]: https://github.com/nobertos/cargo-xtask/tree/a49054989203a877f899d1285b5f3d642cf36d11
 [abstraction]: https://www.tedinski.com/2018/01/30/the-one-ring-problem-abstraction-and-power.html
 [IntelliJ Rust]: https://github.com/intellij-rust/intellij-rust
 [rust-analyzer]: https://github.com/rust-analyzer/rust-analyzer
-[One Hundred Thousand Lines of Rust]: https://nobertos.github.io/2021/09/05/Rust100k.html
+[One Hundred Thousand Lines of Rust]: https://naryene.github.io/2021/09/05/Rust100k.html
 [rust-yt]: https://www.youtube.com/watch?v=Oy_VYovfWyo&list=PLlb7e2G7aSpTfhiECYNI2EZ1uAluUqE_e
 [ra-yt]: https://www.youtube.com/watch?v=I3RXottNwk0&list=PLhb66M_x9UmrqXhQuIpWC5VgTdrGxMx3y
-[pratt]: https://nobertos.github.io/2020/04/13/simple-but-powerful-pratt-parsing.html
+[pratt]: https://naryene.github.io/2020/04/13/simple-but-powerful-pratt-parsing.html
 
 
 Welcome to my resume!
@@ -24,4 +23,3 @@ unimplemented!()
 
 
 The resume is available as [.html][resume.html] and [.pdf][resume.pdf].
-
