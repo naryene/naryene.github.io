@@ -1,0 +1,57 @@
+# DiSE: Distributed Symmetric-key Encryption - Part 2
+
+Welcome to the second part of the series where i dissect [(Agrawal et al., 2018)](https://eprint.iacr.org/2018/727.pdf).
+
+In [part 1](/2025/09/02/dise-part-1.html), we reviewed the different architectures that can benefit from distributed symmetric-key encryption and some definitions used in the paper.
+
+In this part, I will try explaining the security and performance challenges that the authors had to consider before constructing DiSE.
+
+## Technical challenges
+
+### Modeling security
+
+Most existing definitions for threshold cryptography were designed for public-key encryption and digital signatures, but the same definitions do not cover every problem that appears when symmetric-key encryption is distributed between multiple parties.
+
+The paper considers a system with *n parties* and a *threshold t*, any group containing at least t parties should be able to encrypt or decrypt a message together, while an attacker controlling fewer than t parties should not be able to perform these operations alone.
+
+- The attacker can corrupt up to t - 1 parties, these parties can behave maliciously and send incorrect responses instead of following the protocol.
+
+- Honest parties are connected using secure point-to-point channels, this prevents the attacker from reading or modifying the communication between two honest parties.
+
+- The master key should never be reconstructed, every party keeps its own secret share and uses it to answer encryption or decryption requests.
+
+For example, if a system has n = 5 parties and a threshold t = 3, a client can contact any 3 of the 5 parties to encrypt a message. An attacker controlling only 2 parties should not be able to encrypt, decrypt or generate a valid ciphertext without contacting at least one honest party.
+
+### Consistency
+
+The party that starts an encryption does not have to be the same party that will later start the decryption, the same is true for the group of parties participating in both operations.
+
+This means that a ciphertext generated using one group of t parties should also be correctly decrypted using another group of at least t parties. This property is called *consistency*.
+
+For example, parties 1, 2 and 3 could participate in encrypting a message, while parties 2, 4 and 5 could later participate in decrypting its ciphertext.
+
+### Encryption and decryption queries
+
+In a normal symmetric encryption scheme, an attacker can ask for messages to be encrypted and then tries to distinguish which message is contained in a challenge ciphertext. In a distributed scheme, the attacker can also participate through the parties that it corrupted.
+
+The attacker can start an encryption or decryption request, but it can also participate in a request started by an honest party. The paper calls the second case an *indirect query*. These queries are important because the messages exchanged during an honest encryption or decryption should not reveal the plaintext to corrupted parties.
+
+A corrupted party should also not be able to use the information collected from previous requests to later encrypt, decrypt or generate new valid ciphertexts while operating alone.
+
+## Performance challenges
+
+Threshold public-key cryptography and general multi-party computation can provide similar functionality, but they usually require expensive public-key operations, more communication and several rounds of interaction.
+
+Applications based on symmetric-key encryption are generally expected to have high throughput and low latency, so replacing one symmetric encryption with an expensive multi-party protocol would not be practical for systems such as secret managers or authentication services.
+
+The authors aim for a protocol with only one request and one response:
+
+- One party sends an encryption or decryption request to the selected parties.
+
+- Every selected party computes its own response using its secret share.
+
+- The selected parties send their responses directly to the party that started the request, they do not need to communicate with each other.
+
+- The initiating party combines the responses and obtains the ciphertext or plaintext without reconstructing the master key.
+
+In the next part, we will look more closely at the correctness, message privacy and authenticity properties that are needed to make this protocol secure.
