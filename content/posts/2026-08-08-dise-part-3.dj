@@ -1,0 +1,44 @@
+# DiSE: Distributed Symmetric-key Encryption - Part 3
+
+Welcome to the third part of the series where i dissect [(Agrawal et al., 2018)](https://eprint.iacr.org/2018/727.pdf).
+
+In [part 2](/2026/08/05/dise-part-2.html), we looked at the consistency requirement and at how encryption and decryption queries give the attacker more power in a distributed setting than in a normal symmetric scheme.
+
+In this part, I will try explaining the three properties that together make a threshold symmetric-key encryption scheme secure, correctness, message privacy, and authenticity.
+
+## Security requirements
+
+The paper defines security of a TSE scheme as the combination of these three properties, a scheme that only satisfies one or two of them is not considered secure. Correctness is checked against a single encryption followed by a single decryption, while message privacy and authenticity let the attacker interact with the honest parties through many encryption and decryption queries before it has to produce its answer.
+
+Correctness and authenticity also come in an ordinary and a strong variant, and reaching for the strong variant is not free, it typically demands a distributed pseudorandom function with a stronger correctness guarantee plus zero-knowledge proofs and public-key operations to enforce honest behaviour, the expensive machinery part 2 said this construction was trying to avoid.
+
+### Correctness
+
+Correctness answers a simple question, if an honest party encrypts a message, will an honest party later be able to decrypt the resulting ciphertext back to that same message.
+
+*Ordinary correctness* requires that a ciphertext produced by an honest encryptor, even if corrupt parties participated in the encryption protocol, must later decrypt to the original message or to an abort symbol, never to a different message. An attacker participating in the encryption or decryption cannot silently swap the message for another one, the worst it can do is make the whole operation fail.
+
+*Strong correctness* covers two cases:
+
+- If decryption is later performed honestly, it must succeed and return the original message, an abort is not an acceptable outcome here.
+- If corrupted parties deviate during that decryption, returning the original message or aborting is still allowed, but returning a different message never is.
+
+The paper explains why this distinction matters depending on the application. For a secret manager like Vault, a ciphertext might be created once and only decrypted much later, when the original message is already gone from memory, so there is no way to just try the encryption again if it turns out malformed, this is a case where strong correctness is needed. For something like a Kerberos ticket, decryption normally happens right after the ticket is issued, so if it fails the client can simply ask for a new ticket from a different set of servers, the weaker ordinary correctness is enough here.
+
+### Message privacy
+
+Message privacy stops an attacker from learning anything about the plaintext behind a ciphertext it should not be able to read. Beyond requesting encryptions of chosen messages directly or indirectly, the attacker can ask an honest party to decrypt a ciphertext of its choosing, including its own challenge ciphertext, and observe everything the corrupted parties see during that decryption. The guarantee is that this transcript, the messages exchanged between the honest decryptor and the corrupted participants, must not leak anything about the plaintext, even though the attacker is never handed the decrypted output itself.
+
+For example, with n = 5 and t = 3, suppose parties 1 and 2 are corrupt, and the attacker asks party 3 to decrypt its own challenge ciphertext. The participating set for that decryption is parties 1, 2 and 3, and everything parties 1 and 2 see during it must be indistinguishable regardless of which message the ciphertext actually hides.
+
+### Authenticity
+
+Authenticity is about forgery, an attacker controlling fewer than t parties should not be able to produce a ciphertext that decrypts successfully but was not obtained through a legitimate interaction with enough honest parties.
+
+Defining a forgery is harder here than in ordinary authenticated encryption, where a forgery is simply any ciphertext other than the ones the encryption oracle already returned. That does not carry over here, because the attacker can also start its own encryption sessions and pull in honest parties, and the output of such an adversary-initiated session may never reach the honest parties, or may not even be cleanly defined as a single ciphertext, so the paper cannot just keep a list of ciphertexts the attacker already saw and forbid repeating them.
+
+Instead, it counts how many honest-party contacts the attacker made across its adversary-initiated sessions and treats that count as a budget. Producing one possible extra ciphertext costs a number of honest contacts equal to t minus the number of corrupted parties, and the attacker only wins if it outputs one more distinct valid ciphertext than its budget can explain, this is the *one-more* idea. For example, with n = 5, t = 3 and two corrupt parties, that cost is one honest contact per ciphertext, so the attacker needs one more valid ciphertext than the honest parties it actually contacted can explain.
+
+Ordinary and strong authenticity differ in how corrupted parties behave during the final check that decides whether the forged ciphertext decrypts, not in whether they take part in it. Under *ordinary authenticity*, corrupted parties must behave honestly during that check. Under *strong authenticity*, they may manipulate their responses, which can make a ciphertext pass this check even though an honest decryption would have rejected it.
+
+In the next part, I will look at the actual DiSE construction and how it uses a distributed pseudorandom function to achieve these properties.
