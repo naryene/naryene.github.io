@@ -193,7 +193,7 @@ export const blogroll_list = (posts: blogroll.FeedEntry[]): HtmlString => {
     title: "Blogroll",
     description: "Blogs I read, refreshed from their feeds.",
     src: "/content/blogroll.txt",
-    content: html`<ul class="post-list">${list_items}</ul>`,
+    content: html`<ul class="post-list blogroll-list">${list_items}</ul>`,
   });
 };
 
