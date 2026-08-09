@@ -4,6 +4,8 @@ on:
     branches:
     - master
 
+  pull_request:
+
   schedule:
     - cron: "0 0 * * *"
 
@@ -18,9 +20,12 @@ jobs:
       with:
         deno-version: v2.x
 
+    - run: deno task test
+
     - run: deno task build --blogroll
 
     - name: Deploy
+      if: github.event_name != 'pull_request'
       uses: peaceiris/actions-gh-pages@364c31d33bb99327c77b3a5438a83a357a6729ad # v3.4.0
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
