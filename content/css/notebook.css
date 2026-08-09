@@ -543,7 +543,8 @@ video {
 
 .post-list>li {
   margin: 0 0 1.5rem;
-  padding: 0;
+  padding: 1rem 0 0;
+  border-top: 1px dashed var(--rule);
 }
 
 .post-list h2 {
