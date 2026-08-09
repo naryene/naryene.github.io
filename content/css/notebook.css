@@ -558,7 +558,7 @@ video {
 
 .post-list h2 {
   display: grid;
-  grid-template-columns: max-content minmax(0, 1fr);
+  grid-template-columns: 5rem minmax(0, 1fr);
   gap: 0.35rem 2rem;
   align-items: first baseline;
   margin: 0;
