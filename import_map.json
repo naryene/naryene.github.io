@@ -2,6 +2,7 @@
     "imports": {
         "std/": "https://deno.land/std@0.215.0/",
         "highlightjs/": "https://unpkg.com/@highlightjs/cdn-assets@11.6.0/es/",
+        "rss": "jsr:@mikaelporttila/rss@1.0.3",
 
         "djot": "https://raw.githubusercontent.com/jgm/djot.js/0.2.0/src/index.ts",
         "djot/": "https://raw.githubusercontent.com/jgm/djot.js/0.2.0/src/",

@@ -1,0 +1,105 @@
+{
+  "version": 1,
+  "feeds": {
+    "https://matklad.github.io/feed.xml": {
+      "refreshedAt": "2026-08-08T22:44:58.268Z",
+      "entries": [
+        {
+          "title": "Zig's Io.Threaded is Neat",
+          "url": "https://matklad.github.io/2026/08/06/neat-io-threaded.html",
+          "date": "2026-08-06T00:00:00.000Z"
+        },
+        {
+          "title": "Memory Safety's Hardest Problem",
+          "url": "https://matklad.github.io/2026/07/20/memory-safety-hardest-problem.html",
+          "date": "2026-07-20T00:00:00.000Z"
+        },
+        {
+          "title": "CSS: Unavoidable Bad Parts",
+          "url": "https://matklad.github.io/2026/06/04/css-unavoidable-bad-parts.html",
+          "date": "2026-06-04T00:00:00.000Z"
+        }
+      ]
+    },
+    "https://neugierig.org/software/blog/atom.xml": {
+      "refreshedAt": "2026-08-08T22:44:58.602Z",
+      "entries": [
+        {
+          "title": "Jujutsu tutorial",
+          "url": "https://neugierig.org/software/blog/2026/07/jujutsu-tutorial.html",
+          "date": "2026-07-22T00:00:00.000Z"
+        },
+        {
+          "title": "Theseus: translating win32 to wasm",
+          "url": "https://neugierig.org/software/blog/2026/05/theseus-wasm.html",
+          "date": "2026-05-24T00:00:00.000Z"
+        },
+        {
+          "title": "Theseus unpacking",
+          "url": "https://neugierig.org/software/blog/2026/04/theseus-unpack.html",
+          "date": "2026-04-24T00:00:00.000Z"
+        }
+      ]
+    },
+    "https://without.boats/index.xml": {
+      "refreshedAt": "2026-08-08T22:44:58.252Z",
+      "entries": [
+        {
+          "title": "Generators with UnpinCell",
+          "url": "https://without.boats/blog/generators-with-unpin-cell/",
+          "date": "2024-10-25T00:00:00.000Z"
+        },
+        {
+          "title": "UnpinCell",
+          "url": "https://without.boats/blog/unpin-cell/",
+          "date": "2024-10-16T00:00:00.000Z"
+        },
+        {
+          "title": "Pinned places",
+          "url": "https://without.boats/blog/pinned-places/",
+          "date": "2024-07-23T00:00:00.000Z"
+        }
+      ]
+    },
+    "https://jonathan-frere.com/index.xml": {
+      "refreshedAt": "2026-08-08T22:44:58.412Z",
+      "entries": [
+        {
+          "title": "Pushing and Pulling: Three Reactivity Algorithms",
+          "url": "https://jonathan-frere.com/posts/reactivity-algorithms/",
+          "date": "2026-03-06T00:00:00.000Z"
+        },
+        {
+          "title": "Additional Thoughts about the Command Pattern",
+          "url": "https://jonathan-frere.com/posts/command-pattern-followup/",
+          "date": "2025-11-29T00:00:00.000Z"
+        },
+        {
+          "title": "Storing Unwise Amounts of Data in JavaScript Bigints",
+          "url": "https://jonathan-frere.com/posts/bigints-are-cool/",
+          "date": "2025-09-21T00:00:00.000Z"
+        }
+      ]
+    },
+    "https://smallcultfollowing.com/babysteps/atom.xml": {
+      "refreshedAt": "2026-08-08T22:44:59.917Z",
+      "entries": [
+        {
+          "title": "Battery packs: Let's talk about crates, baby",
+          "url": "https://smallcultfollowing.com/babysteps/blog/2026/07/15/battery-packs/?utm_source=atom_feed",
+          "date": "2026-07-15T00:00:00.000Z"
+        },
+        {
+          "title": "Only Bounds",
+          "url": "https://smallcultfollowing.com/babysteps/blog/2026/06/09/only-bounds/?utm_source=atom_feed",
+          "date": "2026-06-09T00:00:00.000Z"
+        },
+        {
+          "title": "Symposium: community-oriented agentic development",
+          "url": "https://smallcultfollowing.com/babysteps/blog/2026/04/21/symposium/?utm_source=atom_feed",
+          "date": "2026-04-21T00:00:00.000Z"
+        }
+      ]
+    }
+  }
+}
