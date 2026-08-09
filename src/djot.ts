@@ -6,6 +6,7 @@ import {
   AstNode,
   BlockQuote,
   CodeBlock,
+  DisplayMath,
   Div,
   Doc,
   Heading,
@@ -15,6 +16,7 @@ import {
   Section,
   Span,
   Str,
+  Table,
   Url,
   Visitor,
 } from "djot/ast.ts";
@@ -60,6 +62,11 @@ export function render(doc: Doc, ctx: RenderCtx): HtmlString {
     ordered_list: (node: OrderedList, r: djot.HTMLRenderer): string => {
       if (node.style === "1)") add_class(node, "callout");
       return r.renderAstNodeDefault(node);
+    },
+    table: (node: Table, r: djot.HTMLRenderer): string => {
+      return `<div class="table-scroll" role="region" aria-label="Scrollable table" tabindex="0">${
+        r.renderAstNodeDefault(node)
+      }</div>`;
     },
     para: (node: Para, r: djot.HTMLRenderer) => {
       if (node.children.length == 1 && node.children[0].tag == "image") {
@@ -201,6 +208,11 @@ ${pre}
     url: (node: Url, r: djot.HTMLRenderer) => {
       add_class(node, "url");
       return r.renderAstNodeDefault(node);
+    },
+    display_math: (node: DisplayMath, r: djot.HTMLRenderer) => {
+      return `<span class="math-scroll" tabindex="0">${
+        r.renderAstNodeDefault(node)
+      }</span>`;
     },
   };
 
