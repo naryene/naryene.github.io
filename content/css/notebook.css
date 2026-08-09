@@ -19,8 +19,7 @@
   --code-bg: #101619;
   --code-header: #0d2936;
   --shadow: 0 1.2rem 3rem rgba(0, 0, 0, 0.38);
-  --content-width: 72ch;
-  --panel-width: 86ch;
+  --content-width: 86ch;
 }
 
 html {
@@ -156,7 +155,6 @@ main,
 }
 
 main {
-  width: min(100%, var(--panel-width));
   margin-block: clamp(1.2rem, 3vw, 2.25rem);
   padding: clamp(1.4rem, 4.5vw, 3.4rem) clamp(1.2rem, 5vw, 4.25rem);
   background: var(--sheet);
