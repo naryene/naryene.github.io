@@ -79,6 +79,16 @@ main,
 
 .site-header {
   padding: clamp(1.5rem, 4vw, 2.75rem) 0 1rem;
+  border-bottom: 1px solid var(--blue);
+}
+
+.site-header::after {
+  display: block;
+  width: 4rem;
+  height: 3px;
+  margin-top: 0.9rem;
+  background: var(--copper);
+  content: "";
 }
 
 .site-header>nav {
@@ -543,8 +553,7 @@ video {
 
 .post-list>li {
   margin: 0 0 1.5rem;
-  padding: 1rem 0 0;
-  border-top: 1px dashed var(--rule);
+  padding: 0;
 }
 
 .post-list h2 {
