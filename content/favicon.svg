@@ -1,5 +1,12 @@
-<svg height="215" viewBox="0 0 215 215" width="215" xmlns="http://www.w3.org/2000/svg">
-  <rect width="100%" height="100%" fill="#ffffff"/>
-  <path d="M62 25.5 L62 180 L85 180 L85 80 L137 180 L160 180 L160 25.5 L137 25.5 L137 125 L85 25.5 L62 25.5 Z" fill="#87CEEB" stroke="#87CEEB" stroke-linecap="round" stroke-width=".25mm"/>
+<svg viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <rect width="128" height="128" rx="12" fill="#0d2936"/>
+  <text
+    x="64"
+    y="78"
+    fill="#e8e3d8"
+    font-family="monospace"
+    font-size="54"
+    font-weight="700"
+    text-anchor="middle"
+  >nr.</text>
 </svg>
-
