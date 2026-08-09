@@ -37,10 +37,7 @@ body {
   margin: 0;
   padding: 0 clamp(1rem, 4vw, 3rem);
   overflow-x: hidden;
-  background-color: var(--paper);
-  background-image:
-    linear-gradient(90deg, transparent 0, transparent calc(50% - 38rem), var(--copper-faint) calc(50% - 38rem), var(--copper-faint) calc(50% - 37.92rem), transparent calc(50% - 37.92rem)),
-    repeating-linear-gradient(0deg, transparent 0, transparent 1.54rem, rgba(117, 181, 209, 0.055) 1.54rem, rgba(117, 181, 209, 0.055) 1.59rem);
+  background: var(--paper);
 }
 
 ::selection {
@@ -82,16 +79,6 @@ main,
 
 .site-header {
   padding: clamp(1.5rem, 4vw, 2.75rem) 0 1rem;
-  border-bottom: 1px solid var(--blue);
-}
-
-.site-header::after {
-  display: block;
-  width: 4rem;
-  height: 3px;
-  margin-top: 0.9rem;
-  background: var(--copper);
-  content: "";
 }
 
 .site-header>nav {
@@ -129,7 +116,6 @@ main,
   place-items: center;
   color: var(--ink);
   background: var(--code-header);
-  border-bottom: 3px solid var(--copper);
   border-radius: 2px;
   font-size: 0.68rem;
   letter-spacing: -0.08em;
@@ -159,24 +145,10 @@ main,
 }
 
 main {
-  position: relative;
   margin-block: clamp(1.2rem, 3vw, 2.25rem);
   padding: clamp(1.4rem, 4.5vw, 3.4rem) clamp(1.2rem, 5vw, 4.25rem);
   background: var(--sheet);
-  border: 1px solid var(--border);
-  border-radius: 2px;
-  box-shadow: var(--shadow);
-}
-
-main::before {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: clamp(0.8rem, 2.5vw, 2.35rem);
-  width: 1px;
-  background: var(--copper-faint);
-  content: "";
-  pointer-events: none;
+  border-radius: 4px;
 }
 
 main:focus {
@@ -229,7 +201,7 @@ p {
 }
 
 article {
-  counter-reset: notebook-section;
+  min-width: 0;
 }
 
 h1,
@@ -242,8 +214,6 @@ h3 {
 h1 {
   max-width: 24ch;
   margin-bottom: 1.25rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 2px solid var(--blue);
   font-size: clamp(1.65rem, 4.5vw, 2.55rem);
   line-height: 1.08;
 }
@@ -254,24 +224,12 @@ h1 .meta {
 
 h2 {
   margin-top: 1.75rem;
-  padding-bottom: 0.35rem;
-  border-bottom: 1px solid var(--rule);
   font-size: clamp(1.25rem, 3vw, 1.55rem);
   line-height: 1.2;
 }
 
-article h2 {
-  counter-increment: notebook-section;
-}
-
 article h2::before {
-  margin-right: 0.65rem;
-  color: var(--copper);
-  font-family: "JetBrains Mono", monospace;
-  font-size: 0.62em;
-  letter-spacing: 0;
-  content: counter(notebook-section, decimal-leading-zero);
-  vertical-align: 0.16em;
+  display: none;
 }
 
 h3 {
@@ -284,20 +242,6 @@ h3 {
 
 :is(h1, h2, h3)>a {
   text-decoration: none;
-}
-
-section:target> :is(h1, h2, h3)::before {
-  color: var(--copper);
-}
-
-article section:target>h2::before {
-  position: static;
-  left: auto;
-  content: counter(notebook-section, decimal-leading-zero);
-}
-
-article section:target>h2 {
-  border-bottom-color: var(--copper);
 }
 
 a {
@@ -598,26 +542,8 @@ video {
 }
 
 .post-list>li {
-  position: relative;
-  margin: 0;
-  padding: 1rem 0;
-  border-bottom: 1px dashed var(--rule);
-}
-
-.post-list>li:first-child {
-  border-top: 1px dashed var(--rule);
-}
-
-.post-list>li::before {
-  position: absolute;
-  top: 1.33rem;
-  left: -1.5rem;
-  width: 0.5rem;
-  height: 0.5rem;
-  background: var(--sheet);
-  border: 1px solid var(--copper);
-  border-radius: 50%;
-  content: "";
+  margin: 0 0 1.5rem;
+  padding: 0;
 }
 
 .post-list h2 {
@@ -656,7 +582,6 @@ video {
 @media (max-width: 48rem) {
   body {
     padding-inline: 0.75rem;
-    background-image: repeating-linear-gradient(0deg, transparent 0, transparent 1.54rem, rgba(117, 181, 209, 0.05) 1.54rem, rgba(117, 181, 209, 0.05) 1.59rem);
   }
 
   .site-header {
@@ -675,14 +600,6 @@ video {
   main {
     margin-block: 0.8rem 1.25rem;
     padding: 1.35rem 1.1rem 1.75rem;
-  }
-
-  main::before {
-    display: none;
-  }
-
-  .post-list>li::before {
-    display: none;
   }
 
   .post-list h2 {
@@ -767,11 +684,6 @@ video {
   .site-header {
     padding: 0 0 0.75rem;
     border-color: #777;
-  }
-
-  .site-header::after,
-  main::before {
-    display: none;
   }
 
   main {
