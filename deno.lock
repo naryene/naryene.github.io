@@ -2,7 +2,8 @@
   "version": "5",
   "specifiers": {
     "jsr:@maxim-mazurok/sax-ts@1.2.13": "1.2.13",
-    "jsr:@mikaelporttila/rss@1.0.3": "1.0.3"
+    "jsr:@mikaelporttila/rss@1.0.3": "1.0.3",
+    "npm:katex@0.16.47": "0.16.47"
   },
   "jsr": {
     "@maxim-mazurok/sax-ts@1.2.13": {
@@ -13,6 +14,18 @@
       "dependencies": [
         "jsr:@maxim-mazurok/sax-ts"
       ]
+    }
+  },
+  "npm": {
+    "commander@8.3.0": {
+      "integrity": "sha512-OkTL9umf+He2DZkUq8f8J9of7yL6RJKI24dVITBmNfZBmri9zYZQrKkuXiKhyfPSu8tUhnVBB1iKXevvnlR4Ww=="
+    },
+    "katex@0.16.47": {
+      "integrity": "sha512-Eeo8Ys1doU1z+x8AZsPpQu+p/QcZBI5PeOo7QGQdy2x2m0MU/hYagBbGOmXwr5KVbEfVuWv9LpnQWeehogurjg==",
+      "dependencies": [
+        "commander"
+      ],
+      "bin": true
     }
   },
   "remote": {
@@ -178,5 +191,11 @@
     "https://unpkg.com/@highlightjs/cdn-assets@11.6.0/es/languages/latex.min.js": "25481e88e76264cb60af3e05100da8949dbeb7acc5a37575be954b64e5e39d84",
     "https://unpkg.com/@highlightjs/cdn-assets@11.6.0/es/languages/nix.min.js": "05f8036eff30127626bd9b15eac961ce417addf076816b93ddd09b567c6d0b02",
     "https://unpkg.com/@highlightjs/cdn-assets@11.6.0/es/languages/x86asm.min.js": "620cbc48d2c1e33bf59dc23556dd2dfc2b5aa8b09d7b462dc5fdb4d25d6756cb"
+  },
+  "workspace": {
+    "dependencies": [
+      "jsr:@mikaelporttila/rss@1.0.3",
+      "npm:katex@0.16.47"
+    ]
   }
 }

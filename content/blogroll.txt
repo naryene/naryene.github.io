@@ -1,5 +1,8 @@
 https://matklad.github.io/feed.xml
-https://graydon2.dreamwidth.org/data/atom
+# https://graydon2.dreamwidth.org/data/atom
+# Removed 2026-08-09: dreamwidth answers this endpoint with 504s or hangs, and
+# the rare successful response is a well-formed feed with no entries at all.
+# Uncomment once it serves entries again, then refresh and commit the cache.
 https://neugierig.org/software/blog/atom.xml
 https://without.boats/index.xml
 https://jonathan-frere.com/index.xml
