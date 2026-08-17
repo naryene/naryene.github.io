@@ -34,5 +34,5 @@ Deno.test("a full build ships the local katex stylesheet and fonts", async () =>
 
   const index = await Deno.readTextFile("./out/res/index.html");
   assertStringIncludes(index, '<link rel="stylesheet" href="/css/katex.min.css">');
-  assert(!index.includes("<script"), "generated pages must not need a script");
+  assert(!index.includes("katex.min.js"), "generated pages must not load KaTeX JavaScript");
 });

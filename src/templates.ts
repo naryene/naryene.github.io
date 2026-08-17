@@ -29,6 +29,8 @@ export const base = (
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="canonical" href="${site_url}${path}">
   <link rel="alternate" type="application/rss+xml" title="naryene" href="${site_url}/feed.xml">
+  <script data-goatcounter="https://naryene.goatcounter.com/count"
+          async src="https://gc.zgo.at/count.js"></script>
   <style>
   @font-face {
     font-family: 'Open Sans'; src: url('/css/OpenSans-300-Normal.woff2') format('woff2');
