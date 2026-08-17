@@ -183,10 +183,10 @@ export const blogroll_list = (posts: blogroll.FeedEntry[]): HtmlString => {
   );
 
   return base({
-    path: "",
-    title: "naryene",
-    description: blurb,
-    src: "/src/templates.ts",
+    path: "/blogroll.html",
+    title: "Blogroll",
+    description: "Blogs I read, refreshed from their feeds.",
+    src: "/content/blogroll.txt",
     content: html`<ul class="post-list">${list_items}</ul>`,
   });
 };

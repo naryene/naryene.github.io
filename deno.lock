@@ -194,6 +194,7 @@
   },
   "workspace": {
     "dependencies": [
+      "jsr:@mikaelporttila/rss@1.0.3",
       "npm:katex@0.16.47"
     ]
   }

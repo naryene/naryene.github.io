@@ -2,12 +2,23 @@ name: CI
 on:
   push:
     branches:
-    - master
+    - main
+
+  pull_request:
+    branches:
+    - main
 
   pull_request:
 
   schedule:
     - cron: "0 0 * * *"
+
+  workflow_dispatch:
+    inputs:
+      refresh_blogroll:
+        description: "Refresh the blogroll cache before building"
+        type: boolean
+        default: false
 
 jobs:
   CI:
@@ -20,9 +31,20 @@ jobs:
       with:
         deno-version: v2.x
 
+    # Every event validates first: the cache format is the contract that lets
+    # `build` run offline, so a broken cache or parser must fail before we
+    # refresh or publish anything.
     - run: deno task test
 
-    - run: deno task build --blogroll
+    # Scheduled (and opt-in manual) runs refresh the cache in the ephemeral
+    # checkout only: the refreshed entries are deployed, but never committed.
+    - name: Refresh blogroll cache
+      if: github.event_name == 'schedule' || inputs.refresh_blogroll
+      run: deno task update-blogroll
+
+    # Pushes and pull requests build straight from the committed cache, without
+    # any network.
+    - run: deno task build
 
     - name: Deploy
       if: github.event_name != 'pull_request'
