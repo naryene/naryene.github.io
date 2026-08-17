@@ -1,6 +1,8 @@
-import { highlight } from "./highlight.ts";
+import { code_block } from "./highlight.ts";
+import { expand_math } from "./math.ts";
 import { HtmlString, time } from "./templates.ts";
 
+import katex from "katex";
 import * as djot from "djot";
 import {
   AstNode,
@@ -11,6 +13,7 @@ import {
   Doc,
   Heading,
   Image,
+  InlineMath,
   OrderedList,
   Para,
   Section,
@@ -22,7 +25,26 @@ import {
 } from "djot/ast.ts";
 
 export function parse(source: string): Doc {
-  return djot.parse(source);
+  const doc = djot.parse(expand_math(source));
+  trim_math(doc);
+  return doc;
+}
+
+// A multi line `$$...$$` keeps the newlines and container markers of its source
+// so that djot strips `>` and list indentation itself. What survives that is the
+// blank padding around the formula, which is trimmed off here, once the block
+// structure is gone and before any renderer or test sees the node.
+function trim_math(node: AstNode): void {
+  if (node.tag === "inline_math" || node.tag === "display_math") {
+    node.text = node.text.trim();
+    return;
+  }
+  if ("children" in node) {
+    for (const child of node.children) trim_math(child);
+  }
+  if (node.tag === "doc") {
+    for (const footnote of Object.values(node.footnotes)) trim_math(footnote);
+  }
 }
 
 type RenderCtx = {
@@ -152,20 +174,12 @@ ${r.renderChildren(node)}
       return r.renderAstNodeDefault(node);
     },
     code_block: (node: CodeBlock) => {
-      let cap = extract_cap(node);
-      if (cap) {
-        cap = `<figcaption class="title">${cap}</figcaption>\n`;
-      } else {
-        cap = "";
-      }
-
-      const pre = highlight(node.text, node.lang, node.attributes?.highlight).value;
-      return `
-<figure class="code-block">
-${cap}
-${pre}
-</figure>
-`;
+      return code_block({
+        source: node.text,
+        language: node.lang,
+        caption: extract_cap(node),
+        highlight_spec: node.attributes?.highlight,
+      }).value;
     },
     image: (node: Image, r: djot.HTMLRenderer): string => {
       if (has_class(node, "video")) {
@@ -209,15 +223,33 @@ ${pre}
       add_class(node, "url");
       return r.renderAstNodeDefault(node);
     },
-    display_math: (node: DisplayMath, r: djot.HTMLRenderer) => {
-      return `<span class="math-scroll" tabindex="0">${
-        r.renderAstNodeDefault(node)
-      }</span>`;
+    inline_math: (node: InlineMath) => render_math(node.text, false),
+    display_math: (node: DisplayMath) => {
+      return `<span class="math-scroll" tabindex="0">${render_math(node.text, true)}</span>`;
     },
   };
 
   const result = djot.renderHTML(doc, { overrides });
   return new HtmlString(result);
+}
+
+// Math is rendered once, at build time: the pages ship static HTML plus MathML
+// and never load a math runtime. Anything KaTeX cannot render faithfully fails
+// the build instead of being published as broken markup.
+function render_math(text: string, display: boolean): string {
+  try {
+    return katex.renderToString(text, {
+      displayMode: display,
+      output: "htmlAndMathml",
+      throwOnError: true,
+      strict: "error",
+      trust: false,
+    });
+  } catch (error) {
+    const kind = display ? "display math ($$...$$)" : "inline math ($...$)";
+    const reason = error instanceof Error ? error.message : String(error);
+    throw new Error(`failed to render ${kind}: ${reason}\n  formula: ${text}`);
+  }
 }
 
 type AstTag = AstNode["tag"];

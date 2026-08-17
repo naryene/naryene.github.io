@@ -4,6 +4,9 @@ import * as blogroll from "./blogroll.ts";
 
 const site_url = "https://naryene.github.io";
 
+// The vendored KaTeX stylesheet is linked from every page: `extra_css` takes a
+// single sheet and is already used by the resume, so threading a per-page "has
+// math" flag through the template API buys little over one cached stylesheet.
 export const base = (
   { content, src, title, path, description, extra_css }: {
     content: HtmlString;
@@ -26,6 +29,8 @@ export const base = (
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="canonical" href="${site_url}${path}">
   <link rel="alternate" type="application/rss+xml" title="naryene" href="${site_url}/feed.xml">
+  <script data-goatcounter="https://naryene.goatcounter.com/count"
+          async src="https://gc.zgo.at/count.js"></script>
   <style>
   @font-face {
     font-family: 'Open Sans'; src: url('/css/OpenSans-300-Normal.woff2') format('woff2');
@@ -80,6 +85,7 @@ export const base = (
 
   <link rel="stylesheet" href="/css/main.css">
   <link rel="stylesheet" href="/css/notebook.css">
+  <link rel="stylesheet" href="/css/katex.min.css">
   ${extra_css ? html`<link rel="stylesheet" href="/css/${extra_css}">` : ""}
 </head>
 
