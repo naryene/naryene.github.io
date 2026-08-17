@@ -1,4 +1,4 @@
-import { highlight } from "./highlight.ts";
+import { code_block } from "./highlight.ts";
 import { expand_math } from "./math.ts";
 import { HtmlString, time } from "./templates.ts";
 
@@ -168,20 +168,12 @@ ${r.renderChildren(node)}
       return r.renderAstNodeDefault(node);
     },
     code_block: (node: CodeBlock) => {
-      let cap = extract_cap(node);
-      if (cap) {
-        cap = `<figcaption class="title">${cap}</figcaption>\n`;
-      } else {
-        cap = "";
-      }
-
-      const pre = highlight(node.text, node.lang, node.attributes?.highlight).value;
-      return `
-<figure class="code-block">
-${cap}
-${pre}
-</figure>
-`;
+      return code_block({
+        source: node.text,
+        language: node.lang,
+        caption: extract_cap(node),
+        highlight_spec: node.attributes?.highlight,
+      }).value;
     },
     image: (node: Image, r: djot.HTMLRenderer): string => {
       if (has_class(node, "video")) {
