@@ -168,6 +168,7 @@ async function build(params: {
     "favicon.png",
     "resume.pdf",
     "css/*",
+    "css/katex-fonts/*",
     "assets/*",
     "assets/resilient-parsing/*",
   ];
