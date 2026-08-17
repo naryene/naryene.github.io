@@ -4,9 +4,11 @@
     "frozen": true
   },
   "tasks": {
-    "build": "                deno run --lock --allow-write=./out,./build --allow-read=./out,./build,./content --allow-net --allow-import         ./src/main.ts build --profile",
-    "watch": "rm -rf ./out && deno run --lock --allow-write=./out,./build --allow-read=./out,./build,./content --allow-net --allow-import --watch ./src/main.ts watch",
+    "build": "                deno run --lock --allow-write=./out,./build --allow-read=./out,./build,./content --allow-import         ./src/main.ts build --profile",
+    "watch": "rm -rf ./out && deno run --lock --allow-write=./out,./build --allow-read=./out,./build,./content --allow-import --watch ./src/main.ts watch",
     "serve": "deno task watch & deno run --allow-net --allow-read ./src/server.ts",
-    "touch": "deno run --allow-write=./content/posts ./src/main.ts touch"
+    "touch": "deno run --allow-write=./content/posts ./src/main.ts touch",
+    "update-blogroll": "deno run --lock --allow-read=./content --allow-write=./content/blogroll-cache.json,./content/blogroll-cache.json.tmp --allow-net --allow-import ./src/main.ts update-blogroll",
+    "test": "deno test --lock --allow-read=./content,./build,./out --allow-write=./build,./out --allow-import --allow-run ./src/"
   }
 }

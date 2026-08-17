@@ -214,6 +214,42 @@ figcaption.title {
   margin-bottom: 0.25em;
 }
 
+figure.code-block {
+  max-width: 100%;
+}
+
+figure.code-block>.code-block-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  column-gap: 1ch;
+  margin-bottom: 0.25em;
+}
+
+figure.code-block>.code-block-header>.code-title {
+  font-style: italic;
+  font-weight: 400;
+  line-height: 1.45;
+  color: #7a2518;
+  overflow-wrap: anywhere;
+}
+
+figure.code-block>.code-block-header>.code-language {
+  margin-left: auto;
+  font-family: "JetBrains Mono", monospace;
+  font-variant-ligatures: none;
+  font-size: 0.7rem;
+  line-height: 1.45;
+  letter-spacing: 0.05em;
+  color: rgba(0, 0, 0, .55);
+  overflow-wrap: anywhere;
+}
+
+figure.code-block>pre {
+  max-width: 100%;
+}
+
 figure.code-block>pre>code {
   display: flex;
   flex-direction: column;
@@ -224,6 +260,8 @@ figure.code-block>pre>code {
 
 figure.code-block>pre>code>.line {
   counter-increment: line;
+  width: max-content;
+  min-width: 100%;
 }
 
 figure.code-block>pre>code>.line:before {

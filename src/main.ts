@@ -7,7 +7,6 @@ import { HtmlString } from "./templates.ts";
 
 async function main() {
   const params = {
-    blogroll: false,
     update: false,
     spell: false,
     profile: false,
@@ -21,6 +20,10 @@ async function main() {
     const path = `./content/posts/${date}-${slug}.dj`;
     console.log(`touching ${path}`);
     await Deno.writeTextFile(path, "#\n");
+    return;
+  }
+  if (subcommand === "update-blogroll") {
+    await update_blogroll();
     return;
   }
 
@@ -44,10 +47,6 @@ async function main() {
         i++;
         break;
       }
-      case "--blogroll": {
-        params.blogroll = true;
-        break;
-      }
       default:
         fatal(`unexpected argument: ${Deno.args[i]}`);
     }
@@ -60,6 +59,16 @@ async function main() {
   } else {
     fatal("subcommand required");
   }
+}
+
+async function update_blogroll() {
+  const cache = await blogroll.update_cache();
+  const feeds = Object.keys(cache.feeds).length;
+  const entries = Object.values(cache.feeds)
+    .reduce((total, feed) => total + feed.entries.length, 0);
+  console.log(
+    `wrote ${blogroll.cache_path}: ${feeds} feeds, ${entries} entries`,
+  );
 }
 
 function fatal(message: string) {
@@ -76,7 +85,6 @@ async function watch(params: { filter: string }) {
       console.log(`rebuild #${build_id}`);
       build_id += 1;
       await build({
-        blogroll: false,
         update: true,
         spell: false,
         profile: false,
@@ -110,7 +118,6 @@ class Ctx {
 }
 
 async function build(params: {
-  blogroll: boolean;
   update: boolean;
   spell: boolean;
   profile: boolean;
@@ -135,13 +142,11 @@ async function build(params: {
     );
   }
 
-  if (params.blogroll) {
-    const blogroll_posts = await blogroll.blogroll();
-    await update_file(
-      "out/res/blogroll.html",
-      templates.blogroll_list(blogroll_posts).value,
-    );
-  }
+  const blogroll_posts = await blogroll.blogroll();
+  await update_file(
+    "out/res/blogroll.html",
+    templates.blogroll_list(blogroll_posts).value,
+  );
 
   const pages = ["about", "resume", "links"];
   for (const page of pages) {
@@ -163,6 +168,7 @@ async function build(params: {
     "favicon.png",
     "resume.pdf",
     "css/*",
+    "css/katex-fonts/*",
     "assets/*",
     "assets/resilient-parsing/*",
   ];
