@@ -19,6 +19,7 @@ import {
   Section,
   Span,
   Str,
+  Table,
   Url,
   Visitor,
 } from "djot/ast.ts";
@@ -83,6 +84,11 @@ export function render(doc: Doc, ctx: RenderCtx): HtmlString {
     ordered_list: (node: OrderedList, r: djot.HTMLRenderer): string => {
       if (node.style === "1)") add_class(node, "callout");
       return r.renderAstNodeDefault(node);
+    },
+    table: (node: Table, r: djot.HTMLRenderer): string => {
+      return `<div class="table-scroll" role="region" aria-label="Scrollable table" tabindex="0">${
+        r.renderAstNodeDefault(node)
+      }</div>`;
     },
     para: (node: Para, r: djot.HTMLRenderer) => {
       if (node.children.length == 1 && node.children[0].tag == "image") {
@@ -218,7 +224,9 @@ ${r.renderChildren(node)}
       return r.renderAstNodeDefault(node);
     },
     inline_math: (node: InlineMath) => render_math(node.text, false),
-    display_math: (node: DisplayMath) => render_math(node.text, true),
+    display_math: (node: DisplayMath) => {
+      return `<span class="math-scroll" tabindex="0">${render_math(node.text, true)}</span>`;
+    },
   };
 
   const result = djot.renderHTML(doc, { overrides });

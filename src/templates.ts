@@ -84,26 +84,36 @@ export const base = (
   </style>
 
   <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/notebook.css">
   <link rel="stylesheet" href="/css/katex.min.css">
   ${extra_css ? html`<link rel="stylesheet" href="/css/${extra_css}">` : ""}
 </head>
 
 <body>
-  <header>
-    <nav>
-      <a class="title" href="/">naryene</a>
-      <a href="/about.html">About</a>
-      <a href="/links.html">Links</a>
-      <a href="/blogroll.html">Blogroll</a>
+  <a class="skip-link" href="#content">Skip to content</a>
+
+  <header class="site-header">
+    <nav aria-label="Primary">
+      <a class="title" href="/">
+        <span class="site-mark" aria-hidden="true">nr.</span>
+        <span>naryene</span>
+      </a>
+      <span class="nav-links">
+        <a href="/about.html">About</a>
+        <a href="/links.html">Links</a>
+        <a href="/blogroll.html">Blogroll</a>
+      </span>
     </nav>
+    <p class="site-description">systems · cryptography · low-level notes</p>
   </header>
 
-  <main>
+  <main id="content" tabindex="-1">
   ${content}
   </main>
 
-  <footer>
-    <p>
+  <footer class="site-footer">
+    <p class="footer-links">
+      <span class="footer-label">references / correspondence</span>
       <a href="https://github.com/naryene/naryene.github.io/edit/master${src}">
         <svg class="icon"><use href="/assets/icons.svg#edit"/></svg>
         Fix typo
@@ -189,7 +199,7 @@ export const blogroll_list = (posts: blogroll.FeedEntry[]): HtmlString => {
     title: "Blogroll",
     description: "Blogs I read, refreshed from their feeds.",
     src: "/content/blogroll.txt",
-    content: html`<ul class="post-list">${list_items}</ul>`,
+    content: html`<ul class="post-list blogroll-list">${list_items}</ul>`,
   });
 };
 

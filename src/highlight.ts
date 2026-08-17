@@ -91,7 +91,7 @@ export function highlight(
     return `<span class="line${cls}">${it}${calls}</span>`;
   })
     .join("\n");
-  return html`\n<pre><code>${new HtmlString(lines)}</code></pre>\n`;
+  return html`\n<pre tabindex="0"><code>${new HtmlString(lines)}</code></pre>\n`;
 }
 
 function add_spans(source: string, language?: string): HtmlString {
