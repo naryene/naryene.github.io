@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+<link href="https://naryene.github.io/feed.xml" rel="self" type="application/atom+xml"/>
+<link href="https://naryene.github.io" rel="alternate" type="text/html"/>
+<updated>2026-08-22T01:15:47.658Z</updated>
+<id>https://naryene.github.io/feed.xml</id>
+<title type="html">naryene</title>
+<subtitle>Yet another yet another programming blog by Rayene Nassim ZORGANI aka naryene.</subtitle>
+<author><name>Rayene Nassim ZORGANI</name></author>
+
+<entry>
+<title type="text">DiSE: Distributed Symmetric-key Encryption - Part 3</title>
+<link href="https://naryene.github.io/2026/08/08/dise-part-3.html" rel="alternate" type="text/html" title="DiSE: Distributed Symmetric-key Encryption - Part 3" />
+<published>2026-08-08T00:00:00+00:00</published>
+<updated>2026-08-08T00:00:00+00:00</updated>
+<id>https://naryene.github.io/2026/08/08/dise-part-3</id>
+<author><name>Rayene Nassim ZORGANI</name></author>
+<summary type="html"><![CDATA[Welcome to the third part of the series where i dissect (Agrawal et al., 2018).]]></summary>
+<content type="html" xml:base="https://naryene.github.io/2026/08/08/dise-part-3.html"><![CDATA[
+<h1><span>DiSE: Distributed Symmetric-key Encryption - Part 3</span> <time class="meta" datetime="2026-08-08">Aug 8, 2026</time></h1>
+<p><span>Welcome to the third part of the series where i dissect </span><a href="https://eprint.iacr.org/2018/727.pdf"><span>(Agrawal et al., 2018)</span></a><span>.</span></p>
+<p><span>In </span><a href="/2026/08/05/dise-part-2.html"><span>part 2</span></a><span>, we looked at the consistency requirement and at how encryption and decryption queries give the attacker more power in a distributed setting than in a normal symmetric scheme.</span></p>
+<p><span>In this part, I will try explaining the three properties that together make a threshold symmetric-key encryption scheme secure, correctness, message privacy, and authenticity.</span></p>
+<section id="Security-requirements">
+
+    <h2>
+    <a href="#Security-requirements"><span>Security requirements</span> </a>
+    </h2>
+<p><span>The paper defines security of a TSE scheme as the combination of these three properties, a scheme that only satisfies one or two of them is not considered secure. Correctness is checked against a single encryption followed by a single decryption, while message privacy and authenticity let the attacker interact with the honest parties through many encryption and decryption queries before it has to produce its answer.</span></p>
+<p><span>Correctness and authenticity also come in an ordinary and a strong variant, and reaching for the strong variant is not free, it typically demands a distributed pseudorandom function with a stronger correctness guarantee plus zero-knowledge proofs and public-key operations to enforce honest behaviour, the expensive machinery part 2 said this construction was trying to avoid.</span></p>
+<section id="Correctness">
+
+    <h3>
+    <a href="#Correctness"><span>Correctness</span> </a>
+    </h3>
+<p><span>Correctness answers a simple question, if an honest party encrypts a message, will an honest party later be able to decrypt the resulting ciphertext back to that same message.</span></p>
+<p><strong><span>Ordinary correctness</span></strong><span> requires that a ciphertext produced by an honest encryptor, even if corrupt parties participated in the encryption protocol, must later decrypt to the original message or to an abort symbol, never to a different message. An attacker participating in the encryption or decryption cannot silently swap the message for another one, the worst it can do is make the whole operation fail.</span></p>
+<p><strong><span>Strong correctness</span></strong><span> covers two cases:</span></p>
+<ul>
+<li>
+<span>If decryption is later performed honestly, it must succeed and return the original message, an abort is not an acceptable outcome here.</span>
+</li>
+<li>
+<span>If corrupted parties deviate during that decryption, returning the original message or aborting is still allowed, but returning a different message never is.</span>
+</li>
+</ul>
+<p><span>The paper explains why this distinction matters depending on the application. For a secret manager like Vault, a ciphertext might be created once and only decrypted much later, when the original message is already gone from memory, so there is no way to just try the encryption again if it turns out malformed, this is a case where strong correctness is needed. For something like a Kerberos ticket, decryption normally happens right after the ticket is issued, so if it fails the client can simply ask for a new ticket from a different set of servers, the weaker ordinary correctness is enough here.</span></p>
+</section>
+<section id="Message-privacy">
+
+    <h3>
+    <a href="#Message-privacy"><span>Message privacy</span> </a>
+    </h3>
+<p><span>Message privacy stops an attacker from learning anything about the plaintext behind a ciphertext it should not be able to read. Beyond requesting encryptions of chosen messages directly or indirectly, the attacker can ask an honest party to decrypt a ciphertext of its choosing, including its own challenge ciphertext, and observe everything the corrupted parties see during that decryption. The guarantee is that this transcript, the messages exchanged between the honest decryptor and the corrupted participants, must not leak anything about the plaintext, even though the attacker is never handed the decrypted output itself.</span></p>
+<p><span>For example, with n = 5 and t = 3, suppose parties 1 and 2 are corrupt, and the attacker asks party 3 to decrypt its own challenge ciphertext. The participating set for that decryption is parties 1, 2 and 3, and everything parties 1 and 2 see during it must be indistinguishable regardless of which message the ciphertext actually hides.</span></p>
+</section>
+<section id="Authenticity">
+
+    <h3>
+    <a href="#Authenticity"><span>Authenticity</span> </a>
+    </h3>
+<p><span>Authenticity is about forgery, an attacker controlling fewer than t parties should not be able to produce a ciphertext that decrypts successfully but was not obtained through a legitimate interaction with enough honest parties.</span></p>
+<p><span>Defining a forgery is harder here than in ordinary authenticated encryption, where a forgery is simply any ciphertext other than the ones the encryption oracle already returned. That does not carry over here, because the attacker can also start its own encryption sessions and pull in honest parties, and the output of such an adversary-initiated session may never reach the honest parties, or may not even be cleanly defined as a single ciphertext, so the paper cannot just keep a list of ciphertexts the attacker already saw and forbid repeating them.</span></p>
+<p><span>Instead, it counts how many honest-party contacts the attacker made across its adversary-initiated sessions and treats that count as a budget. Producing one possible extra ciphertext costs a number of honest contacts equal to t minus the number of corrupted parties, and the attacker only wins if it outputs one more distinct valid ciphertext than its budget can explain, this is the </span><strong><span>one-more</span></strong><span> idea. For example, with n = 5, t = 3 and two corrupt parties, that cost is one honest contact per ciphertext, so the attacker needs one more valid ciphertext than the honest parties it actually contacted can explain.</span></p>
+<p><span>Ordinary and strong authenticity differ in how corrupted parties behave during the final check that decides whether the forged ciphertext decrypts, not in whether they take part in it. Under </span><strong><span>ordinary authenticity</span></strong><span>, corrupted parties must behave honestly during that check. Under </span><strong><span>strong authenticity</span></strong><span>, they may manipulate their responses, which can make a ciphertext pass this check even though an honest decryption would have rejected it.</span></p>
+<p><span>In the next part, I will look at the actual DiSE construction and how it uses a distributed pseudorandom function to achieve these properties.</span></p>
+</section>
+</section>
+]]></content>
+</entry>
+
+<entry>
+<title type="text">DiSE: Distributed Symmetric-key Encryption - Part 2</title>
+<link href="https://naryene.github.io/2026/08/05/dise-part-2.html" rel="alternate" type="text/html" title="DiSE: Distributed Symmetric-key Encryption - Part 2" />
+<published>2026-08-05T00:00:00+00:00</published>
+<updated>2026-08-05T00:00:00+00:00</updated>
+<id>https://naryene.github.io/2026/08/05/dise-part-2</id>
+<author><name>Rayene Nassim ZORGANI</name></author>
+<summary type="html"><![CDATA[Welcome to the second part of the series where i dissect (Agrawal et al., 2018).]]></summary>
+<content type="html" xml:base="https://naryene.github.io/2026/08/05/dise-part-2.html"><![CDATA[
+<h1><span>DiSE: Distributed Symmetric-key Encryption - Part 2</span> <time class="meta" datetime="2026-08-05">Aug 5, 2026</time></h1>
+<p><span>Welcome to the second part of the series where i dissect </span><a href="https://eprint.iacr.org/2018/727.pdf"><span>(Agrawal et al., 2018)</span></a><span>.</span></p>
+<p><span>In </span><a href="/2025/09/02/dise-part-1.html"><span>part 1</span></a><span>, we reviewed the different architectures that can benefit from distributed symmetric-key encryption and some definitions used in the paper.</span></p>
+<p><span>In this part, I will try explaining the security and performance challenges that the authors had to consider before constructing DiSE.</span></p>
+<section id="Technical-challenges">
+
+    <h2>
+    <a href="#Technical-challenges"><span>Technical challenges</span> </a>
+    </h2>
+<section id="Modeling-security">
+
+    <h3>
+    <a href="#Modeling-security"><span>Modeling security</span> </a>
+    </h3>
+<p><span>Most existing definitions for threshold cryptography were designed for public-key encryption and digital signatures, but the same definitions do not cover every problem that appears when symmetric-key encryption is distributed between multiple parties.</span></p>
+<p><span>The paper considers a system with </span><strong><span>n parties</span></strong><span> and a </span><strong><span>threshold t</span></strong><span>, any group containing at least t parties should be able to encrypt or decrypt a message together, while an attacker controlling fewer than t parties should not be able to perform these operations alone.</span></p>
+<ul>
+<li>
+<p><span>The attacker can corrupt up to t - 1 parties, these parties can behave maliciously and send incorrect responses instead of following the protocol.</span></p>
+</li>
+<li>
+<p><span>Honest parties are connected using secure point-to-point channels, this prevents the attacker from reading or modifying the communication between two honest parties.</span></p>
+</li>
+<li>
+<p><span>The master key should never be reconstructed, every party keeps its own secret share and uses it to answer encryption or decryption requests.</span></p>
+</li>
+</ul>
+<p><span>For example, if a system has n = 5 parties and a threshold t = 3, a client can contact any 3 of the 5 parties to encrypt a message. An attacker controlling only 2 parties should not be able to encrypt, decrypt or generate a valid ciphertext without contacting at least one honest party.</span></p>
+</section>
+<section id="Consistency">
+
+    <h3>
+    <a href="#Consistency"><span>Consistency</span> </a>
+    </h3>
+<p><span>The party that starts an encryption does not have to be the same party that will later start the decryption, the same is true for the group of parties participating in both operations.</span></p>
+<p><span>This means that a ciphertext generated using one group of t parties should also be correctly decrypted using another group of at least t parties. This property is called </span><strong><span>consistency</span></strong><span>.</span></p>
+<p><span>For example, parties 1, 2 and 3 could participate in encrypting a message, while parties 2, 4 and 5 could later participate in decrypting its ciphertext.</span></p>
+</section>
+<section id="Encryption-and-decryption-queries">
+
+    <h3>
+    <a href="#Encryption-and-decryption-queries"><span>Encryption and decryption queries</span> </a>
+    </h3>
+<p><span>In a normal symmetric encryption scheme, an attacker can ask for messages to be encrypted and then tries to distinguish which message is contained in a challenge ciphertext. In a distributed scheme, the attacker can also participate through the parties that it corrupted.</span></p>
+<p><span>The attacker can start an encryption or decryption request, but it can also participate in a request started by an honest party. The paper calls the second case an </span><strong><span>indirect query</span></strong><span>. These queries are important because the messages exchanged during an honest encryption or decryption should not reveal the plaintext to corrupted parties.</span></p>
+<p><span>A corrupted party should also not be able to use the information collected from previous requests to later encrypt, decrypt or generate new valid ciphertexts while operating alone.</span></p>
+</section>
+</section>
+<section id="Performance-challenges">
+
+    <h2>
+    <a href="#Performance-challenges"><span>Performance challenges</span> </a>
+    </h2>
+<p><span>Threshold public-key cryptography and general multi-party computation can provide similar functionality, but they usually require expensive public-key operations, more communication and several rounds of interaction.</span></p>
+<p><span>Applications based on symmetric-key encryption are generally expected to have high throughput and low latency, so replacing one symmetric encryption with an expensive multi-party protocol would not be practical for systems such as secret managers or authentication services.</span></p>
+<p><span>The authors aim for a protocol with only one request and one response:</span></p>
+<ul>
+<li>
+<p><span>One party sends an encryption or decryption request to the selected parties.</span></p>
+</li>
+<li>
+<p><span>Every selected party computes its own response using its secret share.</span></p>
+</li>
+<li>
+<p><span>The selected parties send their responses directly to the party that started the request, they do not need to communicate with each other.</span></p>
+</li>
+<li>
+<p><span>The initiating party combines the responses and obtains the ciphertext or plaintext without reconstructing the master key.</span></p>
+</li>
+</ul>
+<p><span>In the next part, we will look more closely at the correctness, message privacy and authenticity properties that are needed to make this protocol secure.</span></p>
+</section>
+]]></content>
+</entry>
+
+<entry>
+<title type="text">DiSE: Distributed Symmetric-key Encryption - Part 1</title>
+<link href="https://naryene.github.io/2025/09/02/dise-part-1.html" rel="alternate" type="text/html" title="DiSE: Distributed Symmetric-key Encryption - Part 1" />
+<published>2025-09-02T00:00:00+00:00</published>
+<updated>2025-09-02T00:00:00+00:00</updated>
+<id>https://naryene.github.io/2025/09/02/dise-part-1</id>
+<author><name>Rayene Nassim ZORGANI</name></author>
+<summary type="html"><![CDATA[Welcome to the firt part of a multi-part series where i will dissect (Agrawal et al., 2018).]]></summary>
+<content type="html" xml:base="https://naryene.github.io/2025/09/02/dise-part-1.html"><![CDATA[
+<h1><span>DiSE: Distributed Symmetric-key Encryption - Part 1</span> <time class="meta" datetime="2025-09-02">Sep 2, 2025</time></h1>
+<p><span>Welcome to the firt part of a multi-part series where i will dissect </span><a href="https://eprint.iacr.org/2018/727.pdf"><span>(Agrawal et al., 2018)</span></a><span>.</span></p>
+<p><span>In this first part, I will try explaining essential concepts such as definitions that will help us understand more the main contributions of this paper.</span></p>
+<section id="introduction">
+
+    <h2>
+    <a href="#introduction"><span>introduction</span> </a>
+    </h2>
+<p><span>This paper discusses ways and protocols to correctly implement threshold cryptography in a symmetric way, most of the studies done before this paper mostly focused on asymmetric cryptography, while there is a huge benefit to gain from using symmetric encryption as mentioned by the authors.</span></p>
+<section id="Some-reviewed-architectures">
+
+    <h3>
+    <a href="#Some-reviewed-architectures"><span>Some reviewed architectures</span> </a>
+    </h3>
+<p><span>a lot of systems benefit and are based on symmetric threshold, the papers site three Examples:</span></p>
+<ul>
+<li>
+<p><span>Secret Management Systems, such as the open source Keywhiz, Knox, and Hashicorp, these tools use a method called </span><strong><span>authenticated encryption</span></strong><span>, they use a key called </span><strong><span>master key</span></strong><span> to encrypt a large amount of data. Some tools try to improve security by splitting this master key among several parties during setup, using techniques like secret sharing. But once the system has started and the key is loaded into memory, it usually stays unprotected until the system is rebooted.</span></p>
+<ul>
+<li>
+<span>Hashicorp vault at first is in a sealed state, when initialized, it generates an </span><strong><span>encryption key</span></strong><span> that is protected by a </span><strong><span>root key</span></strong><span>, The root key is itself encrypted using an unseal key that is split into multiple shares with Shamir’s Secret Sharing. To unseal Vault, a minimum number of shares must be provided to reconstruct the unseal key, which then decrypts the root key and allows access to the encryption key. Once unsealed, Vault can decrypt its data and operate normally.</span>
+</li>
+</ul>
+</li>
+<li>
+<p><span>Entreprise Network Authentication, for this section we have mainly Kerberos which is used to provide SSO, the way to get a ticket-granting ticket TGT in kerberos is to authenticate using a master key, which is now rendered as an important attack target</span></p>
+</li>
+<li>
+<p><span>Multi-device IoT authentication, in this example the authors give a potential method to distribute secret key among multiple IoT/mobile devices, and since IoT devices usually have limited processing power, such distributed methods should be lightweight, requiring minimal communication and only simple cryptographic tools like block ciphers.</span></p>
+</li>
+</ul>
+</section>
+</section>
+<section id="Definitions">
+
+    <h2>
+    <a href="#Definitions"><span>Definitions</span> </a>
+    </h2>
+<section id="Threshold-cryptography">
+
+    <h3>
+    <a href="#Threshold-cryptography"><span>Threshold cryptography</span> </a>
+    </h3>
+<p><span>The first definition that we need to explain is threshold cryptography, which is is a system that aims to encrypt a message using a public key then distribute it across multiple nodes, these nodes share generally the same private key, and they need to cooperate in order to decrypt the whole ciphertext. </span><a href="https://en.wikipedia.org/wiki/Threshold_cryptosystem"><span>Threshold cryptosystem - Wikipedia</span></a><span> </span></p>
+</section>
+<section id="Authenticated-Encryption-AE">
+
+    <h3>
+    <a href="#Authenticated-Encryption-AE"><span>Authenticated Encryption (AE)</span> </a>
+    </h3>
+<p><span>Classical authenticated encryption is an encryption scheme that simultaneously provides confidentiality and data authenticity, generally it is more complicated than confidentiality-only or authenticity-only scheme, but it is easier to use because you only need one key, more rubust and provides less freedom for the user to error (</span><a href="https://crypto.stackexchange.com/questions/923/why-choose-an-authenticated-encryption-mode-instead-of-a-separate-mac?rq=1"><span>block cipher - Why choose an authenticated encryption mode instead of a separate MAC? - Cryptography Stack Exchange</span></a><span>).</span></p>
+<p><span>Examples of encryption schemes that provide AE are </span><a href="https://en.wikipedia.org/wiki/Galois/Counter_Mode"><span>Galois/Counter Mode (GCM)</span></a><span> and </span><a href="https://en.wikipedia.org/wiki/CCM_mode"><span>counter with cipher block chaining message authentication code (CCM mode)</span></a><span>.</span></p>
+</section>
+</section>
+]]></content>
+</entry>
+
+<entry>
+<title type="text">My blog</title>
+<link href="https://naryene.github.io/2025/01/21/welcome-to-my-blog.html" rel="alternate" type="text/html" title="My blog" />
+<published>2025-01-21T00:00:00+00:00</published>
+<updated>2025-01-21T00:00:00+00:00</updated>
+<id>https://naryene.github.io/2025/01/21/welcome-to-my-blog</id>
+<author><name>Rayene Nassim ZORGANI</name></author>
+<summary type="html"><![CDATA[Hello and welcome to my blog, I am planning on sharing my journey of learning about distributed systems and low level programming :).]]></summary>
+<content type="html" xml:base="https://naryene.github.io/2025/01/21/welcome-to-my-blog.html"><![CDATA[
+<h1><span>My blog</span> <time class="meta" datetime="2025-01-21">Jan 21, 2025</time></h1>
+<p><span>Hello and welcome to my blog, I am planning on sharing my journey of learning about distributed systems and low level programming :).</span></p>
+]]></content>
+</entry>
+
+</feed>
