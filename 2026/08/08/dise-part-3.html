@@ -1,0 +1,169 @@
+
+<!DOCTYPE html>
+<html lang='en-US'>
+<head>
+  <meta charset='utf-8'>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DiSE: Distributed Symmetric-key Encryption - Part 3</title>
+  <meta name="description" content="Welcome to the third part of the series where i dissect (Agrawal et al., 2018).">
+  <link rel="icon" href="/favicon.png" type="image/png">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="canonical" href="https://naryene.github.io/2026/08/08/dise-part-3.html">
+  <link rel="alternate" type="application/rss+xml" title="naryene" href="https://naryene.github.io/feed.xml">
+  <script data-goatcounter="https://naryene.goatcounter.com/count"
+          async src="https://gc.zgo.at/count.js"></script>
+  <style>
+  @font-face {
+    font-family: 'Open Sans'; src: url('/css/OpenSans-300-Normal.woff2') format('woff2');
+    font-weight: 300; font-style: normal;
+  }
+  @font-face {
+    font-family: 'JetBrains Mono'; src: url('/css/JetBrainsMono-400-Normal.woff2') format('woff2');
+    font-weight: 400; font-style: normal;
+  }
+  @font-face {
+    font-family: 'JetBrains Mono'; src: url('/css/JetBrainsMono-700-Normal.woff2') format('woff2');
+    font-weight: 700; font-style: normal;
+  }
+  @font-face {
+    font-family: 'EB Garamond'; src: url('/css/EBGaramond-400-Normal.woff2') format('woff2');
+    font-weight: 400; font-style: normal;
+  }
+  @font-face {
+    font-family: 'EB Garamond'; src: url('/css/EBGaramond-400-Italic.woff2') format('woff2');
+    font-weight: 400; font-style: italic;
+  }
+  @font-face {
+    font-family: 'EB Garamond'; src: url('/css/EBGaramond-700-Normal.woff2') format('woff2');
+    font-weight: 700; font-style: normal;
+  }
+  @font-face {
+    font-family: 'EB Garamond'; src: url('/css/EBGaramond-700-Italic.woff2') format('woff2');
+    font-weight: 700; font-style: italic;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; margin-block-start: 0; margin-block-end: 0; }
+
+  body {
+    max-width: 80ch;
+    padding: 2ch;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  header { margin-bottom: 2rem; }
+  header > nav { display: flex; column-gap: 2ch; align-items: baseline; flex-wrap: wrap; }
+  header a { font-style: normal; color: rgba(0, 0, 0, .8); text-decoration: none; }
+  header a:hover { color: rgba(0, 0, 0, .8); text-decoration: underline; }
+  header .title { font-size: 1.25em; flex-grow: 2; }
+
+  footer { margin-top: 2rem; }
+  footer > p { display: flex; column-gap: 2ch; justify-content: center; flex-wrap: wrap; }
+  footer a { color: rgba(0, 0, 0, .8); text-decoration: none; white-space: nowrap; }
+  footer i { vertical-align: middle; color: rgba(0, 0, 0, .8) }
+
+  </style>
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/notebook.css">
+  <link rel="stylesheet" href="/css/katex.min.css">
+  
+</head>
+
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+
+  <header class="site-header">
+    <nav aria-label="Primary">
+      <a class="title" href="/">
+        <span class="site-mark" aria-hidden="true">nr.</span>
+        <span>naryene</span>
+      </a>
+      <span class="nav-links">
+        <a href="/about.html">About</a>
+        <a href="/links.html">Links</a>
+        <a href="/blogroll.html">Blogroll</a>
+      </span>
+    </nav>
+    <p class="site-description">systems · cryptography · low-level notes</p>
+  </header>
+
+  <main id="content" tabindex="-1">
+  <article >
+
+<h1><span>DiSE: Distributed Symmetric-key Encryption - Part 3</span> <time class="meta" datetime="2026-08-08">Aug 8, 2026</time></h1>
+<p><span>Welcome to the third part of the series where i dissect </span><a href="https://eprint.iacr.org/2018/727.pdf"><span>(Agrawal et al., 2018)</span></a><span>.</span></p>
+<p><span>In </span><a href="/2026/08/05/dise-part-2.html"><span>part 2</span></a><span>, we looked at the consistency requirement and at how encryption and decryption queries give the attacker more power in a distributed setting than in a normal symmetric scheme.</span></p>
+<p><span>In this part, I will try explaining the three properties that together make a threshold symmetric-key encryption scheme secure, correctness, message privacy, and authenticity.</span></p>
+<section id="Security-requirements">
+
+    <h2>
+    <a href="#Security-requirements"><span>Security requirements</span> </a>
+    </h2>
+<p><span>The paper defines security of a TSE scheme as the combination of these three properties, a scheme that only satisfies one or two of them is not considered secure. Correctness is checked against a single encryption followed by a single decryption, while message privacy and authenticity let the attacker interact with the honest parties through many encryption and decryption queries before it has to produce its answer.</span></p>
+<p><span>Correctness and authenticity also come in an ordinary and a strong variant, and reaching for the strong variant is not free, it typically demands a distributed pseudorandom function with a stronger correctness guarantee plus zero-knowledge proofs and public-key operations to enforce honest behaviour, the expensive machinery part 2 said this construction was trying to avoid.</span></p>
+<section id="Correctness">
+
+    <h3>
+    <a href="#Correctness"><span>Correctness</span> </a>
+    </h3>
+<p><span>Correctness answers a simple question, if an honest party encrypts a message, will an honest party later be able to decrypt the resulting ciphertext back to that same message.</span></p>
+<p><strong><span>Ordinary correctness</span></strong><span> requires that a ciphertext produced by an honest encryptor, even if corrupt parties participated in the encryption protocol, must later decrypt to the original message or to an abort symbol, never to a different message. An attacker participating in the encryption or decryption cannot silently swap the message for another one, the worst it can do is make the whole operation fail.</span></p>
+<p><strong><span>Strong correctness</span></strong><span> covers two cases:</span></p>
+<ul>
+<li>
+<span>If decryption is later performed honestly, it must succeed and return the original message, an abort is not an acceptable outcome here.</span>
+</li>
+<li>
+<span>If corrupted parties deviate during that decryption, returning the original message or aborting is still allowed, but returning a different message never is.</span>
+</li>
+</ul>
+<p><span>The paper explains why this distinction matters depending on the application. For a secret manager like Vault, a ciphertext might be created once and only decrypted much later, when the original message is already gone from memory, so there is no way to just try the encryption again if it turns out malformed, this is a case where strong correctness is needed. For something like a Kerberos ticket, decryption normally happens right after the ticket is issued, so if it fails the client can simply ask for a new ticket from a different set of servers, the weaker ordinary correctness is enough here.</span></p>
+</section>
+<section id="Message-privacy">
+
+    <h3>
+    <a href="#Message-privacy"><span>Message privacy</span> </a>
+    </h3>
+<p><span>Message privacy stops an attacker from learning anything about the plaintext behind a ciphertext it should not be able to read. Beyond requesting encryptions of chosen messages directly or indirectly, the attacker can ask an honest party to decrypt a ciphertext of its choosing, including its own challenge ciphertext, and observe everything the corrupted parties see during that decryption. The guarantee is that this transcript, the messages exchanged between the honest decryptor and the corrupted participants, must not leak anything about the plaintext, even though the attacker is never handed the decrypted output itself.</span></p>
+<p><span>For example, with n = 5 and t = 3, suppose parties 1 and 2 are corrupt, and the attacker asks party 3 to decrypt its own challenge ciphertext. The participating set for that decryption is parties 1, 2 and 3, and everything parties 1 and 2 see during it must be indistinguishable regardless of which message the ciphertext actually hides.</span></p>
+</section>
+<section id="Authenticity">
+
+    <h3>
+    <a href="#Authenticity"><span>Authenticity</span> </a>
+    </h3>
+<p><span>Authenticity is about forgery, an attacker controlling fewer than t parties should not be able to produce a ciphertext that decrypts successfully but was not obtained through a legitimate interaction with enough honest parties.</span></p>
+<p><span>Defining a forgery is harder here than in ordinary authenticated encryption, where a forgery is simply any ciphertext other than the ones the encryption oracle already returned. That does not carry over here, because the attacker can also start its own encryption sessions and pull in honest parties, and the output of such an adversary-initiated session may never reach the honest parties, or may not even be cleanly defined as a single ciphertext, so the paper cannot just keep a list of ciphertexts the attacker already saw and forbid repeating them.</span></p>
+<p><span>Instead, it counts how many honest-party contacts the attacker made across its adversary-initiated sessions and treats that count as a budget. Producing one possible extra ciphertext costs a number of honest contacts equal to t minus the number of corrupted parties, and the attacker only wins if it outputs one more distinct valid ciphertext than its budget can explain, this is the </span><strong><span>one-more</span></strong><span> idea. For example, with n = 5, t = 3 and two corrupt parties, that cost is one honest contact per ciphertext, so the attacker needs one more valid ciphertext than the honest parties it actually contacted can explain.</span></p>
+<p><span>Ordinary and strong authenticity differ in how corrupted parties behave during the final check that decides whether the forged ciphertext decrypts, not in whether they take part in it. Under </span><strong><span>ordinary authenticity</span></strong><span>, corrupted parties must behave honestly during that check. Under </span><strong><span>strong authenticity</span></strong><span>, they may manipulate their responses, which can make a ciphertext pass this check even though an honest decryption would have rejected it.</span></p>
+<p><span>In the next part, I will look at the actual DiSE construction and how it uses a distributed pseudorandom function to achieve these properties.</span></p>
+</section>
+</section>
+</article>
+  </main>
+
+  <footer class="site-footer">
+    <p class="footer-links">
+      <span class="footer-label">references / correspondence</span>
+      <a href="https://github.com/naryene/naryene.github.io/edit/master/content/posts/2026-08-08-dise-part-3.dj">
+        <svg class="icon"><use href="/assets/icons.svg#edit"/></svg>
+        Fix typo
+      </a>
+      <a href="/feed.xml">
+        <svg class="icon"><use href="/assets/icons.svg#rss"/></svg>
+        Subscribe
+      </a>
+      <a href="mailto:rn.zorgani+blog@gmail.com">
+        <svg class="icon"><use href="/assets/icons.svg#email"/></svg>
+        Get in touch
+      </a>
+      <a href="https://github.com/naryene">
+        <svg class="icon"><use href="/assets/icons.svg#github"/></svg>
+        naryene
+      </a>
+    </p>
+  </footer>
+</body>
+
+</html>

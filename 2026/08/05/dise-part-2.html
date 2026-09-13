@@ -1,0 +1,192 @@
+
+<!DOCTYPE html>
+<html lang='en-US'>
+<head>
+  <meta charset='utf-8'>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DiSE: Distributed Symmetric-key Encryption - Part 2</title>
+  <meta name="description" content="Welcome to the second part of the series where i dissect (Agrawal et al., 2018).">
+  <link rel="icon" href="/favicon.png" type="image/png">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="canonical" href="https://naryene.github.io/2026/08/05/dise-part-2.html">
+  <link rel="alternate" type="application/rss+xml" title="naryene" href="https://naryene.github.io/feed.xml">
+  <script data-goatcounter="https://naryene.goatcounter.com/count"
+          async src="https://gc.zgo.at/count.js"></script>
+  <style>
+  @font-face {
+    font-family: 'Open Sans'; src: url('/css/OpenSans-300-Normal.woff2') format('woff2');
+    font-weight: 300; font-style: normal;
+  }
+  @font-face {
+    font-family: 'JetBrains Mono'; src: url('/css/JetBrainsMono-400-Normal.woff2') format('woff2');
+    font-weight: 400; font-style: normal;
+  }
+  @font-face {
+    font-family: 'JetBrains Mono'; src: url('/css/JetBrainsMono-700-Normal.woff2') format('woff2');
+    font-weight: 700; font-style: normal;
+  }
+  @font-face {
+    font-family: 'EB Garamond'; src: url('/css/EBGaramond-400-Normal.woff2') format('woff2');
+    font-weight: 400; font-style: normal;
+  }
+  @font-face {
+    font-family: 'EB Garamond'; src: url('/css/EBGaramond-400-Italic.woff2') format('woff2');
+    font-weight: 400; font-style: italic;
+  }
+  @font-face {
+    font-family: 'EB Garamond'; src: url('/css/EBGaramond-700-Normal.woff2') format('woff2');
+    font-weight: 700; font-style: normal;
+  }
+  @font-face {
+    font-family: 'EB Garamond'; src: url('/css/EBGaramond-700-Italic.woff2') format('woff2');
+    font-weight: 700; font-style: italic;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; margin-block-start: 0; margin-block-end: 0; }
+
+  body {
+    max-width: 80ch;
+    padding: 2ch;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  header { margin-bottom: 2rem; }
+  header > nav { display: flex; column-gap: 2ch; align-items: baseline; flex-wrap: wrap; }
+  header a { font-style: normal; color: rgba(0, 0, 0, .8); text-decoration: none; }
+  header a:hover { color: rgba(0, 0, 0, .8); text-decoration: underline; }
+  header .title { font-size: 1.25em; flex-grow: 2; }
+
+  footer { margin-top: 2rem; }
+  footer > p { display: flex; column-gap: 2ch; justify-content: center; flex-wrap: wrap; }
+  footer a { color: rgba(0, 0, 0, .8); text-decoration: none; white-space: nowrap; }
+  footer i { vertical-align: middle; color: rgba(0, 0, 0, .8) }
+
+  </style>
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/notebook.css">
+  <link rel="stylesheet" href="/css/katex.min.css">
+  
+</head>
+
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+
+  <header class="site-header">
+    <nav aria-label="Primary">
+      <a class="title" href="/">
+        <span class="site-mark" aria-hidden="true">nr.</span>
+        <span>naryene</span>
+      </a>
+      <span class="nav-links">
+        <a href="/about.html">About</a>
+        <a href="/links.html">Links</a>
+        <a href="/blogroll.html">Blogroll</a>
+      </span>
+    </nav>
+    <p class="site-description">systems · cryptography · low-level notes</p>
+  </header>
+
+  <main id="content" tabindex="-1">
+  <article >
+
+<h1><span>DiSE: Distributed Symmetric-key Encryption - Part 2</span> <time class="meta" datetime="2026-08-05">Aug 5, 2026</time></h1>
+<p><span>Welcome to the second part of the series where i dissect </span><a href="https://eprint.iacr.org/2018/727.pdf"><span>(Agrawal et al., 2018)</span></a><span>.</span></p>
+<p><span>In </span><a href="/2025/09/02/dise-part-1.html"><span>part 1</span></a><span>, we reviewed the different architectures that can benefit from distributed symmetric-key encryption and some definitions used in the paper.</span></p>
+<p><span>In this part, I will try explaining the security and performance challenges that the authors had to consider before constructing DiSE.</span></p>
+<section id="Technical-challenges">
+
+    <h2>
+    <a href="#Technical-challenges"><span>Technical challenges</span> </a>
+    </h2>
+<section id="Modeling-security">
+
+    <h3>
+    <a href="#Modeling-security"><span>Modeling security</span> </a>
+    </h3>
+<p><span>Most existing definitions for threshold cryptography were designed for public-key encryption and digital signatures, but the same definitions do not cover every problem that appears when symmetric-key encryption is distributed between multiple parties.</span></p>
+<p><span>The paper considers a system with </span><strong><span>n parties</span></strong><span> and a </span><strong><span>threshold t</span></strong><span>, any group containing at least t parties should be able to encrypt or decrypt a message together, while an attacker controlling fewer than t parties should not be able to perform these operations alone.</span></p>
+<ul>
+<li>
+<p><span>The attacker can corrupt up to t - 1 parties, these parties can behave maliciously and send incorrect responses instead of following the protocol.</span></p>
+</li>
+<li>
+<p><span>Honest parties are connected using secure point-to-point channels, this prevents the attacker from reading or modifying the communication between two honest parties.</span></p>
+</li>
+<li>
+<p><span>The master key should never be reconstructed, every party keeps its own secret share and uses it to answer encryption or decryption requests.</span></p>
+</li>
+</ul>
+<p><span>For example, if a system has n = 5 parties and a threshold t = 3, a client can contact any 3 of the 5 parties to encrypt a message. An attacker controlling only 2 parties should not be able to encrypt, decrypt or generate a valid ciphertext without contacting at least one honest party.</span></p>
+</section>
+<section id="Consistency">
+
+    <h3>
+    <a href="#Consistency"><span>Consistency</span> </a>
+    </h3>
+<p><span>The party that starts an encryption does not have to be the same party that will later start the decryption, the same is true for the group of parties participating in both operations.</span></p>
+<p><span>This means that a ciphertext generated using one group of t parties should also be correctly decrypted using another group of at least t parties. This property is called </span><strong><span>consistency</span></strong><span>.</span></p>
+<p><span>For example, parties 1, 2 and 3 could participate in encrypting a message, while parties 2, 4 and 5 could later participate in decrypting its ciphertext.</span></p>
+</section>
+<section id="Encryption-and-decryption-queries">
+
+    <h3>
+    <a href="#Encryption-and-decryption-queries"><span>Encryption and decryption queries</span> </a>
+    </h3>
+<p><span>In a normal symmetric encryption scheme, an attacker can ask for messages to be encrypted and then tries to distinguish which message is contained in a challenge ciphertext. In a distributed scheme, the attacker can also participate through the parties that it corrupted.</span></p>
+<p><span>The attacker can start an encryption or decryption request, but it can also participate in a request started by an honest party. The paper calls the second case an </span><strong><span>indirect query</span></strong><span>. These queries are important because the messages exchanged during an honest encryption or decryption should not reveal the plaintext to corrupted parties.</span></p>
+<p><span>A corrupted party should also not be able to use the information collected from previous requests to later encrypt, decrypt or generate new valid ciphertexts while operating alone.</span></p>
+</section>
+</section>
+<section id="Performance-challenges">
+
+    <h2>
+    <a href="#Performance-challenges"><span>Performance challenges</span> </a>
+    </h2>
+<p><span>Threshold public-key cryptography and general multi-party computation can provide similar functionality, but they usually require expensive public-key operations, more communication and several rounds of interaction.</span></p>
+<p><span>Applications based on symmetric-key encryption are generally expected to have high throughput and low latency, so replacing one symmetric encryption with an expensive multi-party protocol would not be practical for systems such as secret managers or authentication services.</span></p>
+<p><span>The authors aim for a protocol with only one request and one response:</span></p>
+<ul>
+<li>
+<p><span>One party sends an encryption or decryption request to the selected parties.</span></p>
+</li>
+<li>
+<p><span>Every selected party computes its own response using its secret share.</span></p>
+</li>
+<li>
+<p><span>The selected parties send their responses directly to the party that started the request, they do not need to communicate with each other.</span></p>
+</li>
+<li>
+<p><span>The initiating party combines the responses and obtains the ciphertext or plaintext without reconstructing the master key.</span></p>
+</li>
+</ul>
+<p><span>In the next part, we will look more closely at the correctness, message privacy and authenticity properties that are needed to make this protocol secure.</span></p>
+</section>
+</article>
+  </main>
+
+  <footer class="site-footer">
+    <p class="footer-links">
+      <span class="footer-label">references / correspondence</span>
+      <a href="https://github.com/naryene/naryene.github.io/edit/master/content/posts/2026-08-05-dise-part-2.dj">
+        <svg class="icon"><use href="/assets/icons.svg#edit"/></svg>
+        Fix typo
+      </a>
+      <a href="/feed.xml">
+        <svg class="icon"><use href="/assets/icons.svg#rss"/></svg>
+        Subscribe
+      </a>
+      <a href="mailto:rn.zorgani+blog@gmail.com">
+        <svg class="icon"><use href="/assets/icons.svg#email"/></svg>
+        Get in touch
+      </a>
+      <a href="https://github.com/naryene">
+        <svg class="icon"><use href="/assets/icons.svg#github"/></svg>
+        naryene
+      </a>
+    </p>
+  </footer>
+</body>
+
+</html>
