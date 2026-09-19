@@ -1,0 +1,174 @@
+
+<!DOCTYPE html>
+<html lang='en-US'>
+<head>
+  <meta charset='utf-8'>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DiSE: Distributed Symmetric-key Encryption - Part 1</title>
+  <meta name="description" content="Welcome to the firt part of a multi-part series where i will dissect (Agrawal et al., 2018).">
+  <link rel="icon" href="/favicon.png" type="image/png">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="canonical" href="https://naryene.github.io/2025/09/02/dise-part-1.html">
+  <link rel="alternate" type="application/rss+xml" title="naryene" href="https://naryene.github.io/feed.xml">
+  <script data-goatcounter="https://naryene.goatcounter.com/count"
+          async src="https://gc.zgo.at/count.js"></script>
+  <style>
+  @font-face {
+    font-family: 'Open Sans'; src: url('/css/OpenSans-300-Normal.woff2') format('woff2');
+    font-weight: 300; font-style: normal;
+  }
+  @font-face {
+    font-family: 'JetBrains Mono'; src: url('/css/JetBrainsMono-400-Normal.woff2') format('woff2');
+    font-weight: 400; font-style: normal;
+  }
+  @font-face {
+    font-family: 'JetBrains Mono'; src: url('/css/JetBrainsMono-700-Normal.woff2') format('woff2');
+    font-weight: 700; font-style: normal;
+  }
+  @font-face {
+    font-family: 'EB Garamond'; src: url('/css/EBGaramond-400-Normal.woff2') format('woff2');
+    font-weight: 400; font-style: normal;
+  }
+  @font-face {
+    font-family: 'EB Garamond'; src: url('/css/EBGaramond-400-Italic.woff2') format('woff2');
+    font-weight: 400; font-style: italic;
+  }
+  @font-face {
+    font-family: 'EB Garamond'; src: url('/css/EBGaramond-700-Normal.woff2') format('woff2');
+    font-weight: 700; font-style: normal;
+  }
+  @font-face {
+    font-family: 'EB Garamond'; src: url('/css/EBGaramond-700-Italic.woff2') format('woff2');
+    font-weight: 700; font-style: italic;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; margin-block-start: 0; margin-block-end: 0; }
+
+  body {
+    max-width: 80ch;
+    padding: 2ch;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  header { margin-bottom: 2rem; }
+  header > nav { display: flex; column-gap: 2ch; align-items: baseline; flex-wrap: wrap; }
+  header a { font-style: normal; color: rgba(0, 0, 0, .8); text-decoration: none; }
+  header a:hover { color: rgba(0, 0, 0, .8); text-decoration: underline; }
+  header .title { font-size: 1.25em; flex-grow: 2; }
+
+  footer { margin-top: 2rem; }
+  footer > p { display: flex; column-gap: 2ch; justify-content: center; flex-wrap: wrap; }
+  footer a { color: rgba(0, 0, 0, .8); text-decoration: none; white-space: nowrap; }
+  footer i { vertical-align: middle; color: rgba(0, 0, 0, .8) }
+
+  </style>
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/notebook.css">
+  <link rel="stylesheet" href="/css/katex.min.css">
+  
+</head>
+
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+
+  <header class="site-header">
+    <nav aria-label="Primary">
+      <a class="title" href="/">
+        <span class="site-mark" aria-hidden="true">nr.</span>
+        <span>naryene</span>
+      </a>
+      <span class="nav-links">
+        <a href="/about.html">About</a>
+        <a href="/links.html">Links</a>
+        <a href="/blogroll.html">Blogroll</a>
+      </span>
+    </nav>
+    <p class="site-description">systems · cryptography · low-level notes</p>
+  </header>
+
+  <main id="content" tabindex="-1">
+  <article >
+
+<h1><span>DiSE: Distributed Symmetric-key Encryption - Part 1</span> <time class="meta" datetime="2025-09-02">Sep 2, 2025</time></h1>
+<p><span>Welcome to the firt part of a multi-part series where i will dissect </span><a href="https://eprint.iacr.org/2018/727.pdf"><span>(Agrawal et al., 2018)</span></a><span>.</span></p>
+<p><span>In this first part, I will try explaining essential concepts such as definitions that will help us understand more the main contributions of this paper.</span></p>
+<section id="introduction">
+
+    <h2>
+    <a href="#introduction"><span>introduction</span> </a>
+    </h2>
+<p><span>This paper discusses ways and protocols to correctly implement threshold cryptography in a symmetric way, most of the studies done before this paper mostly focused on asymmetric cryptography, while there is a huge benefit to gain from using symmetric encryption as mentioned by the authors.</span></p>
+<section id="Some-reviewed-architectures">
+
+    <h3>
+    <a href="#Some-reviewed-architectures"><span>Some reviewed architectures</span> </a>
+    </h3>
+<p><span>a lot of systems benefit and are based on symmetric threshold, the papers site three Examples:</span></p>
+<ul>
+<li>
+<p><span>Secret Management Systems, such as the open source Keywhiz, Knox, and Hashicorp, these tools use a method called </span><strong><span>authenticated encryption</span></strong><span>, they use a key called </span><strong><span>master key</span></strong><span> to encrypt a large amount of data. Some tools try to improve security by splitting this master key among several parties during setup, using techniques like secret sharing. But once the system has started and the key is loaded into memory, it usually stays unprotected until the system is rebooted.</span></p>
+<ul>
+<li>
+<span>Hashicorp vault at first is in a sealed state, when initialized, it generates an </span><strong><span>encryption key</span></strong><span> that is protected by a </span><strong><span>root key</span></strong><span>, The root key is itself encrypted using an unseal key that is split into multiple shares with Shamir’s Secret Sharing. To unseal Vault, a minimum number of shares must be provided to reconstruct the unseal key, which then decrypts the root key and allows access to the encryption key. Once unsealed, Vault can decrypt its data and operate normally.</span>
+</li>
+</ul>
+</li>
+<li>
+<p><span>Entreprise Network Authentication, for this section we have mainly Kerberos which is used to provide SSO, the way to get a ticket-granting ticket TGT in kerberos is to authenticate using a master key, which is now rendered as an important attack target</span></p>
+</li>
+<li>
+<p><span>Multi-device IoT authentication, in this example the authors give a potential method to distribute secret key among multiple IoT/mobile devices, and since IoT devices usually have limited processing power, such distributed methods should be lightweight, requiring minimal communication and only simple cryptographic tools like block ciphers.</span></p>
+</li>
+</ul>
+</section>
+</section>
+<section id="Definitions">
+
+    <h2>
+    <a href="#Definitions"><span>Definitions</span> </a>
+    </h2>
+<section id="Threshold-cryptography">
+
+    <h3>
+    <a href="#Threshold-cryptography"><span>Threshold cryptography</span> </a>
+    </h3>
+<p><span>The first definition that we need to explain is threshold cryptography, which is is a system that aims to encrypt a message using a public key then distribute it across multiple nodes, these nodes share generally the same private key, and they need to cooperate in order to decrypt the whole ciphertext. </span><a href="https://en.wikipedia.org/wiki/Threshold_cryptosystem"><span>Threshold cryptosystem - Wikipedia</span></a><span> </span></p>
+</section>
+<section id="Authenticated-Encryption-AE">
+
+    <h3>
+    <a href="#Authenticated-Encryption-AE"><span>Authenticated Encryption (AE)</span> </a>
+    </h3>
+<p><span>Classical authenticated encryption is an encryption scheme that simultaneously provides confidentiality and data authenticity, generally it is more complicated than confidentiality-only or authenticity-only scheme, but it is easier to use because you only need one key, more rubust and provides less freedom for the user to error (</span><a href="https://crypto.stackexchange.com/questions/923/why-choose-an-authenticated-encryption-mode-instead-of-a-separate-mac?rq=1"><span>block cipher - Why choose an authenticated encryption mode instead of a separate MAC? - Cryptography Stack Exchange</span></a><span>).</span></p>
+<p><span>Examples of encryption schemes that provide AE are </span><a href="https://en.wikipedia.org/wiki/Galois/Counter_Mode"><span>Galois/Counter Mode (GCM)</span></a><span> and </span><a href="https://en.wikipedia.org/wiki/CCM_mode"><span>counter with cipher block chaining message authentication code (CCM mode)</span></a><span>.</span></p>
+</section>
+</section>
+</article>
+  </main>
+
+  <footer class="site-footer">
+    <p class="footer-links">
+      <span class="footer-label">references / correspondence</span>
+      <a href="https://github.com/naryene/naryene.github.io/edit/master/content/posts/2025-09-02-dise-part-1.dj">
+        <svg class="icon"><use href="/assets/icons.svg#edit"/></svg>
+        Fix typo
+      </a>
+      <a href="/feed.xml">
+        <svg class="icon"><use href="/assets/icons.svg#rss"/></svg>
+        Subscribe
+      </a>
+      <a href="mailto:rn.zorgani+blog@gmail.com">
+        <svg class="icon"><use href="/assets/icons.svg#email"/></svg>
+        Get in touch
+      </a>
+      <a href="https://github.com/naryene">
+        <svg class="icon"><use href="/assets/icons.svg#github"/></svg>
+        naryene
+      </a>
+    </p>
+  </footer>
+</body>
+
+</html>
