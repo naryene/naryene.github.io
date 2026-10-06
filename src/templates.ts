@@ -114,7 +114,7 @@ export const base = (
   <footer class="site-footer">
     <p class="footer-links">
       <span class="footer-label">references / correspondence</span>
-      <a href="https://github.com/naryene/naryene.github.io/edit/master${src}">
+      <a href="https://github.com/naryene/naryene.github.io/edit/main${src}">
         <svg class="icon"><use href="/assets/icons.svg#edit"/></svg>
         Fix typo
       </a>
